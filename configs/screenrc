@@ -1,0 +1,3 @@
+
+hardstatus alwayslastline "%H: %{= w}%-w%{= Bk} %n %t %{-}%+w %-="
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+# example: 
+#    install_file configs/bashrc ~/.bashrc
+#
+
+install_file config/screenrc ~/.screenrc
+

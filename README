@@ -1,0 +1,12 @@
+
+To install all given configuration files to your system please run:
+	$> update.sh
+
+To add new configure files add appropriate file to ./configs folder
+and next line to list.in:
+	install_file ./configs/bashrc ~/.bashrc
+
+TODO: 
+	* add cli to merge, update, add new configuration file, and so on
+	* add functional update of configs (like just add source ~/.bashrc-shared)
+
