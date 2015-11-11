@@ -3,5 +3,5 @@
 #    install_file configs/bashrc ~/.bashrc
 #
 
-install_file config/screenrc ~/.screenrc
+install_file configs/screenrc ~/.screenrc
 

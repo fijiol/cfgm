@@ -1,12 +1,12 @@
 #!/bin/bash
 
-MYDIR=$(realpath $(dirname $0))
-BACKUPDIR=$(realpath $MYDIR/backups)
-REVERT_SCRIPT=$(realpath $BACKUPDIR/revert.sh)
-
 realpath() {
 	readlink -f "$1"
 }
+
+MYDIR=$(realpath $(dirname $0))
+BACKUPDIR=$(realpath $MYDIR/backups)
+REVERT_SCRIPT=$(realpath $BACKUPDIR/revert.sh)
 
 add_revert_line() {
 	echo "[ -e \"$2\" ] && cp -vf \"$2\" \"$1\"" >> $REVERT_SCRIPT
