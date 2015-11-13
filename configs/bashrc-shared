@@ -65,9 +65,9 @@ set_screen_title()
 }
 
 scv_branch() {
-	[ -d .hg ] && echo -n "hg<$(hg branch)>;"
-	[ -d .git ] && echo -n "git<$(git branch)>;"
-	[ -f ${P4CONFIG} ] && echo -n "p4<$(cat ${P4CONFIG} | grep P4CLIENT | sed 's/.*=\s*//' | sed 's/\s*//g')>;"
+	which hg &> /dev/null && [ -d .hg ] && echo -n "hg<$(hg branch)>;"
+	which git &> /dev/null && [ -d .git ] && echo -n "git<$(git branch)>;"
+	which p4 &> /dev/null && [ -f ${P4CONFIG} ] && echo -n "p4<$(cat ${P4CONFIG} | grep P4CLIENT | sed 's/.*=\s*//' | sed 's/\s*//g')>;"
 }
 
 alias less='less -r'
