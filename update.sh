@@ -8,8 +8,19 @@ MYDIR=$(realpath $(dirname $0))
 BACKUPDIR=$(realpath $MYDIR/backups)
 REVERT_SCRIPT=$(realpath $BACKUPDIR/revert.sh)
 
+FAKE=""
+
+run() {
+	[ -n "$FAKE" ] && {
+		echo "$1"
+	}
+	[ -n "$FAKE" ] || {
+		echo "$1" | bash
+	}
+}
+
 add_revert_line() {
-	echo "[ -e \"$2\" ] && cp -vf \"$2\" \"$1\"" >> $REVERT_SCRIPT
+	[ -n "$FAKE" ] && echo "[ -e \"$2\" ] && cp -vf \"$2\" \"$1\"" >> $REVERT_SCRIPT
 }
 
 backup_file() {
@@ -23,7 +34,7 @@ backup_file() {
 	do 
 		[ -e "$FILE_TO_BACKUP$i" ] || {
 			add_revert_line "$FILE_FROM_BACKUP" "$FILE_TO_BACKUP$i"
-			mv "$FILE_FROM_BACKUP" "$FILE_TO_BACKUP$i"
+			${FAKE} mv "$FILE_FROM_BACKUP" "$FILE_TO_BACKUP$i"
 			return
 		} 
 	done
@@ -40,10 +51,50 @@ install_file() {
 
 	[ -L $FILE_TO ] || {
 		echo "File $2 exists.... do backup to $MYDIR/backup/ folder."
-		backup_file "$2"
+		[ -n "$FAKE" ] && backup_file "$2"
 	}
-	ln -fs "$MYDIR/$FILE_FROM" "$FILE_TO"
+	${FAKE} ln -fs "$MYDIR/$FILE_FROM" "$FILE_TO"
 }
+
+patch_file() {
+	local PATCHER="$MYDIR/$1"
+	local INLINE="$MYDIR/$2"
+	local FILE_TO="$3"
+
+	echo "Update $3 configuration file"
+
+	[ -e "$PATCHER" ] || {
+		echo "Nothing to update. Patch functions are undefined"
+		return
+	}
+
+	[ -e "$FILE_TO" ] || touch "$FILE_TO"
+
+	# load scripts
+	( 
+		source "$PATCHER"
+
+		need_update "$INLINE" "$FILE_TO" || {
+			echo "File $3 exists and will be updated.... do backup to $MYDIR/backup/ folder."
+			[ -n "$FAKE" ] && backup_file "$3"
+		}
+
+		update "$INLINE" "$FILE_TO"
+	)
+}
+
+#
+# TODO: add parse options
+#
+
+while getopts i OPT
+do
+	case "$OPT" in
+	i)
+		FAKE="echo "
+	;;
+	esac
+done
 
 LIST_IN=$MYDIR/list.in
 [ -e $LIST_IN ] && source $MYDIR/list.in

@@ -1,0 +1,78 @@
+#!/bin/bash
+
+alias ls="ls --color=auto"
+
+# User specific aliases and functions
+export P4CONFIG=P4CONFIG
+export PATH=${PATH}:/home/fijiol/bin/:/home/fijiol/SolarisStudio12.4-beta_jul14-linux-x86/bin
+
+export EDITOR=/usr/bin/vim
+
+red='\033[0;31m'
+green='\033[0;32m'
+blue='\033[0;34m'
+yellow='\033[0;33m'
+purple='\033[0;35m'
+grey='\033[0;37m'
+nc='\033[0m'
+
+
+function zr {
+	export BN=$1
+	shift
+	export BRCH=$1 #eldorado_jdk8
+	shift
+	export SBOX=~/sandbox$1
+	shift
+	export TG=$1
+	shift
+	export ZDK_ROOT=$SBOX/azlinux/$BRCH/x86_64/$TG/
+
+	echo LD_LIBRARY_PATH=$ZDK_ROOT/jre/lib/amd64/server $ZDK_ROOT/bin/$BN $@
+
+	export LD_LIBRARY_PATH=$ZDK_ROOT/jre/lib/amd64/server
+	$ZDK_ROOT/bin/$BN $@
+}
+
+function oj {
+	#export VRS=$1
+	#shift
+	export BN=$1
+	shift
+	export OJDK_PTH=/home/fijiol/jdk8-tt/bin/ 
+	echo $OJDK_PTH/$BN $*
+	$OJDK_PTH/$BN $*
+}
+
+function zrd8 {
+	export BN=$1
+	shift
+	zr $BN jdk8 _java8 debug $@
+}
+
+function mq_dump { 
+	hg qpop -a ; A=1; for i in `hg qser`; do echo $i; hg qpush $i ; hg qref kj ; hg diff -U 1000000 > $A.$i.patch ; A=$((A + 1)) ; hg qref ; done
+}
+
+function ht {
+	for i in `find . -maxdepth 1 -type d`; do [ -d $i/.hg ] && (echo -e "${blue}==== $i ====${nc}"; cd $i ; arr=("$@"); arr=("${arr[@]/+i/$i}"); "${arr[@]}" ) ; done
+}
+
+set_screen_title()
+{
+    #echo -ne "\ek$1\e\\"
+    which screen &>/dev/null && screen -X title "$1" &>/dev/null
+}
+
+scv_branch() {
+	[ -d .hg ] && echo -n "hg<$(hg branch)>;"
+	[ -d .git ] && echo -n "git<$(git branch)>;"
+	[ -f ${P4CONFIG} ] && echo -n "p4<$(cat ${P4CONFIG} | grep P4CLIENT | sed 's/.*=\s*//' | sed 's/\s*//g')>;"
+}
+
+alias less='less -r'
+
+PS1="\$(set_screen_title \$(basename \$(pwd)):\$(scv_branch)) ${yellow}[ ${debian_chroot:+($debian_chroot)}${blue}\u${red}@${green}\h:\w ${blue}(\$(scv_branch)) ${yellow}] \n ${nc}$ "
+PS2="${green}> ${nc}"
+PS4="${green}+ ${nc}"
+

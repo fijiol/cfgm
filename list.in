@@ -4,4 +4,6 @@
 #
 
 install_file configs/screenrc ~/.screenrc
+patch_file patchers/source configs/bashrc-ubuntu ~/.bashrc
+patch_file patchers/source configs/bashrc-shared ~/.bashrc
 

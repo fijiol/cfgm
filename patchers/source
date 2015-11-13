@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# $MYDIR - is the path for root of cfgm
+#
+# should define two functions
+#   need_update "$file_name"
+# and
+#   update "$file_name"
+#
+
+comment() {
+	local SOURCE="$1"
+
+	echo -n "#DO_NOT_REMOVE $(basename $SOURCE)"
+}
+
+line_to_insert() {
+	local SOURCE="$1"
+
+	cat <<-END
+		[ -e "$SOURCE" ] && source "$SOURCE" $(comment "$SOURCE")
+	END
+}
+
+escape() {
+	LINE="$1"
+	#LINE=${LINE/\//\\\/}
+	cat <<<$LINE
+}
+
+need_update() {
+	local SOURCE="$1"
+	local FILE="$2"
+
+	grep -q "$(line_to_insert \"$SOURCE\")" "$FILE" && return 0
+	return 1
+}
+
+update() {
+	local SOURCE="$1"
+	local FILE="$2"
+
+	local LINE=$(line_to_insert "$SOURCE")
+
+	local SCRIPT=$(cat <<-END
+		grep -v '$(comment "$SOURCE")' "$FILE" > "/tmp/$(basename $SOURCE)"
+		cat "/tmp/$(basename $SOURCE)" > "$FILE"
+		echo '$LINE' >> '$FILE'
+	END
+	)
+
+	run "$SCRIPT"
+}
+
