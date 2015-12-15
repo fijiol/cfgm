@@ -74,6 +74,13 @@ scv_branch() {
 	which p4 &> /dev/null && [ -f ${P4CONFIG} ] && echo -n "p4<$(cat ${P4CONFIG} | grep P4CLIENT | sed 's/.*=\s*//' | sed 's/\s*//g')>;"
 }
 
+#
+# mercurial helpers
+#
+mqf() {
+	sed "s/^/.hg\/$(hg qq --active)\//"
+}
+
 alias less='less -r'
 
 PS1="\$(set_screen_title \$(basename \$(pwd)):\$(scv_branch)) ${yellow}[ ${debian_chroot:+($debian_chroot)}${blue}\u${red}@${green}\h:\w ${blue}(\$(scv_branch)) ${yellow}] \n ${nc}$ "
