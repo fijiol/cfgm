@@ -87,3 +87,6 @@ PS1="\$(set_screen_title \$(basename \$(pwd)):\$(scv_branch)) ${yellow}[ ${debia
 PS2="${green}> ${nc}"
 PS4="${green}+ ${nc}"
 
+alias firefox='bash ~/.xinitrc ; firefox'
+alias x='xargs -n 1 -i{} --'
+
