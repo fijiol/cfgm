@@ -2,9 +2,40 @@
 
 alias ls="ls --color=auto"
 
+c() {
+	CMD="$1"
+	shift
+	case "$CMD" in
+	less) $CMD -r "$@" ;;
+	*) $CMD --color=always "$@" ;;
+	esac
+	return $?
+}
+
+cls() {
+	c "$@" | less -r
+}
+
+
+alias vless='cat > /tmp/1 ; view /tmp/1'
+
+#TODO mkfifo
+vls() {
+	"$@" | vless
+}
+
+wt() {
+	while true; do clear ; "$@" || break ; sleep 1 ; done
+}
+
+wf() {
+	while true; do clear ; "$@" && break ; sleep 1 ; done
+}
+
 # User specific aliases and functions
 export P4CONFIG=P4CONFIG
-export PATH=${PATH}:/home/fijiol/bin/:/home/fijiol/SolarisStudio12.4-beta_jul14-linux-x86/bin
+export PATH=${PATH}:/home/fijiol/bin/
+#:/home/fijiol/SolarisStudio12.4-beta_jul14-linux-x86/bin
 
 export EDITOR=/usr/bin/vim
 
@@ -59,7 +90,11 @@ function mq_dump {
 }
 
 function ht {
-	for i in `find . -maxdepth 1 -type d`; do [ -d $i/.hg ] && (echo -e "${blue}==== $i ====${nc}"; cd $i ; arr=("$@"); arr=("${arr[@]/+i/$i}"); "${arr[@]}" ) ; done
+	for i in `find . -maxdepth 1 -type d`; do 
+    _I=${i/#\.\//}
+    _I=${_I/#\./}
+    [ -d $i/.hg ] && (echo -e "${blue}==== $i ====${nc}"; cd $i ; arr=("$@"); arr=("${arr[@]/+i/$i}"); arr=("${arr[@]/\%i/$_I}"); "${arr[@]}" );
+  done
 }
 
 set_screen_title()
@@ -69,6 +104,7 @@ set_screen_title()
 }
 
 scv_branch() {
+	return
 	which hg &> /dev/null && [ -d .hg ] && echo -n "hg<$(hg branch)>;"
 	which git &> /dev/null && [ -d .git ] && echo -n "git<$(git branch | grep '*' | sed 's/* //')>;"
 	which p4 &> /dev/null && [ -f ${P4CONFIG} ] && echo -n "p4<$(cat ${P4CONFIG} | grep P4CLIENT | sed 's/.*=\s*//' | sed 's/\s*//g')>;"
@@ -80,6 +116,39 @@ scv_branch() {
 mqf() {
 	sed "s/^/.hg\/$(hg qq --active)\//"
 }
+
+hgrmAll() {
+  hg purge && hg out -q | tac | xargs -r -n 1 -- hg strip -f --no-backup -r
+}
+
+hgrevertAll() {
+  for i in $(find . -maxdepth 2 -name .hg | xargs -n 1 -- dirname) ; do (cd $i ; hg purge ; hg revert . ; hg out -q | tac | xargs -r -n 1 -- hg strip -f --no-backup -r ; ) ; done
+}
+
+bgrm() {
+  dir=$(mktemp -d ./tmp.XXXX)
+  ( set -x ; mv "$@" ./"$dir" && rm -rf ./"$dir" ) &
+}
+
+hs_disas() {
+  OBJDUMP=$1
+  PLATFORM=$2
+  FILE=$3
+  BIN=$(mktemp ./bin-XXX)
+
+  export LC_ALL=C
+
+  cat "$3" | perl -ne 'print if $met |= /Instructions:/' | grep -v Instructions: | perl -ne 'exit 0 until s/^0x[0-9a-fA-F]*:\s*(.*)$/$1/g ; print' | xxd -r -p - > "$BIN"
+  $OBJDUMP -D -b binary -m $PLATFORM "$BIN"
+}
+
+hg_compare () 
+{ 
+  TMP=$(mktemp /tmp/TMPXXX);
+  cp <(hg cat -r $2 $1) $TMP;
+  echo $1 $TMP
+}
+
 
 alias less='less -r'
 
